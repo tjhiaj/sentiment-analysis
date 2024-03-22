@@ -3,14 +3,12 @@ import torch # argmax to extract highest sequence result
 import requests # grab data/webpage
 from bs4 import BeautifulSoup # traverse results from scrape, extract relevant data
 import re # create regex to extract specific comments
+import numpy as np
+import pandas as pd
 
 # instantiate model
 tokenizer = AutoTokenizer.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
 model = AutoModelForSequenceClassification.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
-
-tokens = tokenizer.encode("I loved this, absolutely the best", return_tensors="pt") # pt for pytorch!
-result = model(tokens) # outputs one-hot encoded list of scores (likeleiness of sentiment)
-# print(int(torch.argmax(result.logits)) + 1) # +1 bc index starts at 0 and we want value 1-5 (bad-good) of the sentiment categories
 
 r = requests.get("https://www.yelp.com/biz/koh-lipe-toronto-2?osq=Thai") # grab webpage using requests lib, returns response code
 soup = BeautifulSoup(r.text, "html.parser") # soup is formatted so BeautifulSoup can search
@@ -19,3 +17,20 @@ results = soup.find_all('p', {"class": regex}) # p tag for paragraphs, returns h
 reviews = [result.text for result in results]
 
 # print(reviews)
+
+# create a data frame
+df = pd.DataFrame(np.array(reviews), columns=["review"])
+# print(df.tail())
+# grab string and store in frame, still need to encode using tokenizer and pass thru model
+df["review"].iloc[0]
+
+def sentiment_score(review):
+    tokens = tokenizer.encode(review, return_tensors="pt") # pt for pytorch!
+    result = model(tokens) # outputs one-hot encoded list of scores (likeleiness of sentiment)
+    return int(torch.argmax(result.logits)) + 1 # +1 bc index starts at 0 and we want value 1-5 (bad-good) of the sentiment categories
+
+# print(sentiment_score(df["review"].iloc[0]))
+
+# extract review column, take every entry as x, nlp is limited to 512 tokens so grab first 512 of each review, add sentiment col
+df["sentiment"] = df["review"].apply(lambda x: sentiment_score(x[:512]))
+print(df)
