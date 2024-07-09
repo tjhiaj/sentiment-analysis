@@ -20,3 +20,4 @@ A sentiment calculator that leverages NLP. Applies Hugging Face Transformers and
 
 
 ## How I Built It
+First, I instantiate my model. AutoTokenizer is a class from Transformers that retrieves the relevant architecture based on the specified path to the pretrained model vocabulary. It creates a tokenizer that's an instance of the specified model tokenizer. AutoModelForSequenceClassification is similar except it creates a model instead ofa  tokenizer. The model has a sequence classification head, meaning
