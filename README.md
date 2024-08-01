@@ -22,7 +22,7 @@ A sentiment calculator that leverages NLP. Applies Hugging Face Transformers and
 ## How I Built It
 First, I instantiate my model. AutoTokenizer is a class from Transformers that retrieves the relevant architecture based on the specified path to the pretrained model vocabulary. It creates a tokenizer that's an instance of the specified model tokenizer. Tokenizers convert strings into sequences of smaller elements called tokens (obvi) that are numerical representations the model can process. This is a crucial step in text preprocessing before passing data to an NLP model. In this case, the specified model is a version of BERT (Bidirectional Encoder Representations from Transformers) that has been trained by NLP Town for sentiment analysis on multiple languages using uncased text. AutoModelForSequenceClassification is similar to AutoTokenizer except it creates a model instead of a tokenizer. The model has a sequence classification head, meaning it takes the output of a sequence model and transforms it into a probability distribution over the possible classes.
 
-Next, I neeed to grab my webpage. I'm using the Yelp page of my favourite restaurant.
+Next, I need to grab my webpage. I'm using the Yelp page of my favourite restaurant.
 
 > Requests is a library that helps you send HTTP requests without having to manually add query strings or form-encode your data (convert to key-value pairs separated by '&' and assigned by '=') The request returns a response object (content, encoding, status, etc.)
 
@@ -32,4 +32,6 @@ Then, I create soup: a BeautifulSoup object. It stores the content of the page i
 
 BeautifulSoup's find_all() method takes in the p tag (paragraphs) along with the class keyword to search for and return all matches to the class (via regex) within the paragraphs. This will be a list of objects, each consisting of the tag and found text. I then extract all the text components to form a list of reviews.
 
-The next step is to create a data frame or table.
+The next step is to create a data frame or table to hold the reviews. This data frame will have one (numbered) column called "review". Then, I want to add a sentiment column. I want to loop through every review and calculate its sentiment score using the first 512 characters of the string (since the NLP pipeline is limited to 512 input tokens at any given time).
+
+To calculate sentiment score, I use the tokenizerModel.encode() method. It encodes the string (aka a list of tokens) into a list of token IDs based on the tokenizer's vocab to be passed to the model. The return_tensors parameter formats the outputted IDs as a PyTorch tensor since this is the default for the model, meaning the model is optimized for PyTorch rather than TensorFlow.
